@@ -45,10 +45,10 @@ functions:
   appointment:
     handler: src/functions/appointment/handler.main
     events:
-      - httpApi:
+      - http:
           path: /appointments
           method: post
-      - httpApi:
+      - http:
           path: /appointments/{insuredId}
           method: get
 
