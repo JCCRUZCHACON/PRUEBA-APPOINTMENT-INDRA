@@ -13,6 +13,7 @@ const rdsConfig = {
 
 const sqsClient = new SQSClient({ region: "us-east-1" });
 
+//appointment_pe.js
 exports.handler = async (event) => {
   const connection = await mysql.createConnection(rdsConfig);
 

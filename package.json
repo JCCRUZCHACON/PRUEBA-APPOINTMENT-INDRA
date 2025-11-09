@@ -1,10 +1,25 @@
 {
+  "name": "aws-project-indra",
+  "version": "1.0.0",
+  "description": "Reto técnico backend AWS",
+  "scripts": {
+    "start": "serverless offline",
+    "deploy": "serverless deploy",
+    "test": "jest --forceExit --detectOpenHandles"
+  },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "aws-sdk-client-mock": "^4.1.0",
+    "jest": "^30.2.0",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-iam-roles-per-function": "^3.2.0",
-    "serverless-plugin-typescript": "^2.1.5"
+    "serverless-plugin-typescript": "^2.1.5",
+    "ts-jest": "^29.4.5"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.927.0",
+    "@aws-sdk/client-sqs": "^3.927.0",
+    "@aws-sdk/lib-dynamodb": "^3.927.0",
     "aws-sdk": "^2.1692.0",
     "mysql2": "^3.15.3"
   }
