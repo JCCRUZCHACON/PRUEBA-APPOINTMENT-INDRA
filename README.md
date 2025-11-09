@@ -191,17 +191,14 @@ Runtime: Node.js 18.x
 Región: us-east-1
 Infraestructura: AWS (DynamoDB, SNS, SQS, RDS)
 
-🧠 Autor
+Autor
 
-👨‍💻 Desarrollado por: JUAN CARLOS CRUZ CHACÓN
+Desarrollado por: JUAN CARLOS CRUZ CHACÓN
 GitHub: https://github.com/JCCRUZCHACON
 Correo: confeccionesmc2018@gmail.com
 Versión: 1.0.0
 Licencia: MIT
 
-💬 “Arquitectura limpia, asincronía total y despliegue sin servidores. Una base sólida para escalar.”
+“Arquitectura limpia, asincronía total y despliegue sin servidores. Una base sólida para escalar.”
 
 
----
-
-¿Quieres que te lo deje **personalizado con tu nombre y tu GitHub**, así lo pegas directo en tu repo p
