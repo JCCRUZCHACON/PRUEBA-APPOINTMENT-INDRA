@@ -1,6 +1,6 @@
-# 🩺 AWS Project Indra — Backend de Agendamiento Médico (Serverless + Node.js)
+#  AWS Project Indra — Backend de Agendamiento Médico (Serverless + Node.js)
 
-## 📘 Descripción del Proyecto
+## Descripción del Proyecto
 
 **AWS Project Indra** es una aplicación backend **serverless** diseñada para gestionar el **agendamiento de citas médicas** para asegurados en **Perú (PE)** y **Chile (CL)**.  
 Utiliza los servicios administrados de AWS para garantizar escalabilidad, disponibilidad y bajo acoplamiento entre los componentes.
@@ -9,7 +9,7 @@ El sistema recibe solicitudes de citas, las almacena temporalmente, las enruta s
 
 ---
 
-## 🧩 Flujo General del Sistema
+## Flujo General del Sistema
 
 1. **Lambda `appointment`**
    - Recibe solicitudes REST (POST/GET).
@@ -32,7 +32,7 @@ El sistema recibe solicitudes de citas, las almacena temporalmente, las enruta s
 
 ---
 
-## ⚙️ Stack Tecnológico
+##  Stack Tecnológico
 
 | Tecnología | Uso principal |
 |-------------|----------------|
@@ -45,7 +45,7 @@ El sistema recibe solicitudes de citas, las almacena temporalmente, las enruta s
 
 ---
 
-## 🏗️ Arquitectura AWS
+## Arquitectura AWS
 
 - **API Gateway** — expone los endpoints REST.
 - **AWS Lambda** — procesamiento sin servidores.
@@ -57,7 +57,7 @@ El sistema recibe solicitudes de citas, las almacena temporalmente, las enruta s
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 aws-project-indra/
 │
@@ -93,7 +93,7 @@ aws-project-indra/
 
 ---
 
-## 🌍 Endpoints REST
+## Endpoints REST
 
 | Método | Endpoint | Descripción |
 |--------|-----------|-------------|
@@ -115,6 +115,8 @@ aws-project-indra/
     "date": "2024-09-30T12:30:00Z"
   }
 }
+
+```
 
 
 Response
