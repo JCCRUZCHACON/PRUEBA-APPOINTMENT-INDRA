@@ -8,18 +8,25 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
+  # IAM global para todos los lambdas
   iamRoleStatements:
     - Effect: Allow
       Action:
+        # DynamoDB
         - dynamodb:PutItem
         - dynamodb:GetItem
         - dynamodb:Query
         - dynamodb:Scan
+        - dynamodb:UpdateItem
+        # SNS
         - sns:Publish
+        # SQS
+        - sqs:SendMessage
         - sqs:ReceiveMessage
         - sqs:DeleteMessage
         - sqs:GetQueueUrl
         - sqs:GetQueueAttributes
+        # RDS (si usas rds-data API)
         - rds-data:ExecuteStatement
       Resource: "*"
       
@@ -46,7 +53,7 @@ functions:
           method: get
 
   appointment_pe:
-    handler: src/functions/appointment_pe/handler.main
+    handler: src/functions/appointment_pe/handler.handler
     events:
       - sqs:
           arn:
@@ -55,7 +62,7 @@ functions:
               - Arn
 
   appointment_cl:
-    handler: src/functions/appointment_cl/handler.main
+    handler: src/functions/appointment_cl/handler.handler
     events:
       - sqs:
           arn:
@@ -122,7 +129,10 @@ resources:
         TopicArn: !Ref AppointmentTopic
         Protocol: sqs
         Endpoint: !GetAtt SQSPE.Arn
-        FilterPolicy: {}
+        FilterPolicy:
+          countryISO:
+            - PE 
+
           
 
     SNSSubscriptionCL:
@@ -131,7 +141,9 @@ resources:
         TopicArn: !Ref AppointmentTopic
         Protocol: sqs
         Endpoint: !GetAtt SQSCL.Arn
-        FilterPolicy: {}
+        FilterPolicy:
+          countryISO:
+            - CL
           
 
     

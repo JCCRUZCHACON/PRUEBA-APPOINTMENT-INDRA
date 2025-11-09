@@ -3,6 +3,7 @@ const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.DYNAMO_TABLE;
 
+//appointment_confirmation
 exports.main = async (event) => {
   for (const record of event.Records) {
     const confirmation = JSON.parse(record.body);

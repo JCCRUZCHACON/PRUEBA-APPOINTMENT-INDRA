@@ -1,197 +1,175 @@
 openapi: 3.0.3
 info:
-  title: API de Agendamiento de Citas Médicas - Serverless
+  title: API de Agendamiento de Citas Médicas
+  description: |
+    API backend para agendar citas médicas para asegurados en Perú y Chile.  
+    Refleja el modelado de DynamoDB/RDS y el cambio de estado de las citas sin alterar la fecha/hora.
   version: 1.0.0
-  description: >
-    API Serverless para agendamiento de citas médicas.  
-    Flujo: HTTP → DynamoDB → SNS → SQS → RDS → SQS Confirmation → DynamoDB.
-
 servers:
-  - url: https://lfw4h12fd7.execute-api.us-east-1.amazonaws.com
+  - url: https://lfw4h12fd7.execute-api.us-east-1.amazonaws.com/dev
+    description: Servidor AWS API Gateway (stage dev)
+
+tags:
+  - name: Citas
+    description: Endpoints para crear y listar citas médicas
+  - name: Agendamiento
+    description: Procesos de confirmación y manejo de estado de citas
 
 paths:
   /appointments:
     post:
-      summary: Registrar una nueva cita
-      operationId: createAppointment
-      description: >
-        Registra una nueva cita en DynamoDB y publica el evento en SNS para su procesamiento.
+      tags:
+        - Citas
+      summary: Crear una nueva cita
+      description: Recibe los datos de una cita y la registra en DynamoDB, enviándola a SNS y SQS de confirmación.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AppointmentRequest'
-            example:
-              insuredId: "01234"
-              countryISO: "PE"
-              schedule:
-                scheduleId: 100
-                centerId: 1
-                specialtyId: 5
-                medicId: 20
-                date: "2025-11-10T14:00:00Z"
       responses:
         '200':
-          description: Cita creada y mensaje publicado en SNS
+          description: Cita creada correctamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppointmentCreatedResponse'
-              example:
-                appointmentId: "a1b2c3d4"
-                status: "pending"
-                message: "Cita creada y en proceso"
+                $ref: '#/components/schemas/AppointmentResponse'
         '400':
-          description: Datos inválidos
+          description: Datos incompletos o inválidos
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
               example:
-                statusCode: 400
                 message: "Datos incompletos"
         '500':
-          description: Error interno
+          description: Error interno del servidor
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
               example:
-                statusCode: 500
-                message: "Error interno al procesar la solicitud"
+                message: "Error interno del servidor"
+                error: "Descripción del error"
 
   /appointments/{insuredId}:
     get:
+      tags:
+        - Citas
       summary: Listar citas por asegurado
-      operationId: getAppointmentsByInsured
+      description: Devuelve todas las citas registradas de un asegurado, incluyendo su estado.
       parameters:
         - name: insuredId
           in: path
           required: true
           schema:
             type: string
-            example: "01234"
-          description: Código del asegurado
+          description: Código del asegurado (5 dígitos)
+          example: "00001"
       responses:
         '200':
-          description: Listado de citas
+          description: Lista de citas del asegurado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppointmentListResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppointmentResponse'
+                example:
+                  - insuredId: "00001"
+                    countryISO: "PE"
+                    schedule:
+                      scheduleId: 100
+                      centerId: 2
+                      specialtyId: 6
+                      medicId: 4
+                      date: "2025-11-09T09:30:00Z"
+                    status: "pending"
+                    createdAt: "2025-11-09T16:02:32.990Z"
+                  - insuredId: "00001"
+                    countryISO: "PE"
+                    schedule:
+                      scheduleId: 100
+                      centerId: 2
+                      specialtyId: 6
+                      medicId: 4
+                      date: "2025-11-09T09:30:00Z"
+                    status: "completed"
+                    createdAt: "2025-11-09T16:02:32.990Z"
+        '400':
+          description: insuredId es requerido
+          content:
+            application/json:
               example:
-                - appointmentId: "a1b2c3d4"
-                  insuredId: "01234"
-                  scheduleId: 100
-                  countryISO: "PE"
-                  status: "completed"
-                  createdAt: "2025-11-08T12:30:00Z"
+                message: "insuredId es requerido"
         '404':
-          description: No se encontraron citas
+          description: Asegurado no encontrado
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
               example:
-                statusCode: 404
-                message: "No se encontraron citas para el asegurado"
+                message: "No se encontraron citas para el asegurado 00001"
         '500':
-          description: Error interno
+          description: Error interno del servidor
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
               example:
-                statusCode: 500
-                message: "Error al recuperar información"
+                message: "Error interno del servidor"
+                error: "Descripción del error"
 
 components:
   schemas:
+    Schedule:
+      type: object
+      properties:
+        centerId:
+          type: integer
+          description: ID del centro médico
+          example: 2
+        specialtyId:
+          type: integer
+          description: ID de la especialidad
+          example: 6
+        medicId:
+          type: integer
+          description: ID del médico
+          example: 4
+        date:
+          type: string
+          format: date-time
+          description: Fecha y hora de la cita (no cambia al actualizar status)
+          example: "2025-11-09T09:30:00Z"
+      required:
+        - centerId
+        - specialtyId
+        - medicId
+        - date
+
     AppointmentRequest:
       type: object
+      properties:
+        insuredId:
+          type: string
+          description: Código del asegurado (5 dígitos)
+          example: "00001"
+        countryISO:
+          type: string
+          description: País del asegurado (PE o CL)
+          example: "PE"
+        schedule:
+          $ref: '#/components/schemas/Schedule'
       required:
         - insuredId
         - countryISO
         - schedule
-      properties:
-        insuredId:
-          type: string
-          pattern: '^[0-9]{5}$'
-        countryISO:
-          type: string
-          enum: ["PE","CL"]
-        schedule:
-          type: object
-          required:
-            - scheduleId
-            - centerId
-            - specialtyId
-            - medicId
-            - date
+
+    AppointmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/AppointmentRequest'
+        - type: object
           properties:
-            scheduleId:
-              type: integer
-            centerId:
-              type: integer
-            specialtyId:
-              type: integer
-            medicId:
-              type: integer
-            date:
+            status:
+              type: string
+              description: Estado del agendamiento (pending/completed)
+              example: "completed"
+            createdAt:
               type: string
               format: date-time
-
-    AppointmentCreatedResponse:
-      type: object
-      properties:
-        appointmentId:
-          type: string
-        status:
-          type: string
-          enum: ["pending","completed"]
-        message:
-          type: string
-
-    AppointmentItem:
-      type: object
-      properties:
-        appointmentId:
-          type: string
-        insuredId:
-          type: string
-        scheduleId:
-          type: integer
-        countryISO:
-          type: string
-        status:
-          type: string
-          enum: ["pending","completed"]
-        createdAt:
-          type: string
-          format: date-time
-
-    AppointmentListResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/AppointmentItem'
-
-    ErrorResponse:
-      type: object
-      properties:
-        statusCode:
-          type: integer
-        message:
-          type: string
-
-x-serverless-flows:
-  SNS_Topic: AppointmentTopic
-  SQS_PE: appointment_pe
-  SQS_CL: appointment_cl
-  SQS_Confirmation: appointment_confirmation
-  Flow:
-    - POST /appointments → DynamoDB
-    - DynamoDB → SNS AppointmentTopic
-    - SNS → SQS_PE → Lambda appointment_pe → RDS
-    - SNS → SQS_CL → Lambda appointment_cl → RDS
-    - SQS_Confirmation → Lambda appointment_confirmation → DynamoDB update
+              description: Fecha de creación de la cita (no cambia al actualizar status)
+              example: "2025-11-09T16:02:32.990Z"
