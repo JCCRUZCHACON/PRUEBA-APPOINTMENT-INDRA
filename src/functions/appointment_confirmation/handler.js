@@ -1,3 +1,4 @@
+// appointment_confirmation.js
 const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.DYNAMO_TABLE;
