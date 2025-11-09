@@ -1,0 +1,169 @@
+service: aws-project-indra
+frameworkVersion: '3'
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Query
+        - dynamodb:Scan
+        - sns:Publish
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueUrl
+        - sqs:GetQueueAttributes
+        - rds-data:ExecuteStatement
+      Resource: "*"
+      
+  environment:
+    RDS_HOST: ${env:RDS_HOST, "notfound"}
+    RDS_USER: ${env:RDS_USER, "notfound"}
+    RDS_PASSWORD: ${env:RDS_PASSWORD, "notfound"}
+    RDS_DB: ${env:RDS_DB, "notfound"}
+    DYNAMO_TABLE: ${env:DYNAMO_TABLE, "AppointmentTable"}
+    SNS_TOPIC_ARN: !Ref AppointmentTopic
+    SQS_PE_URL: !Ref SQSPE
+    SQS_CL_URL: !Ref SQSCL
+    SQS_CONFIRMATION_URL: !Ref SQSConfirmation
+
+functions:
+  appointment:
+    handler: src/functions/appointment/handler.main
+    events:
+      - httpApi:
+          path: /appointments
+          method: post
+      - httpApi:
+          path: /appointments/{insuredId}
+          method: get
+
+  appointment_pe:
+    handler: src/functions/appointment_pe/handler.main
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSPE
+              - Arn
+
+  appointment_cl:
+    handler: src/functions/appointment_cl/handler.main
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSCL
+              - Arn
+
+  appointment_confirmation:
+    handler: src/functions/appointment_confirmation/handler.main
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSConfirmation
+              - Arn
+
+resources:
+  Resources:
+    # DynamoDB
+    AppointmentTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AppointmentTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: insuredId
+            AttributeType: S
+          - AttributeName: scheduleId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: insuredId
+            KeyType: HASH
+          - AttributeName: scheduleId
+            KeyType: RANGE
+
+    # SNS Topic
+    AppointmentTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: AppointmentTopic
+
+    # SQS para PE
+    SQSPE:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: SQS_PE
+
+    # SQS para CL
+    SQSCL:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: SQS_CL
+
+    # SQS de confirmación
+    SQSConfirmation:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: SQS_Confirmation
+
+    # Suscripciones SNS → SQS
+    SNSSubscriptionPE:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref AppointmentTopic
+        Protocol: sqs
+        Endpoint: !GetAtt SQSPE.Arn
+        FilterPolicy: {}
+          
+
+    SNSSubscriptionCL:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref AppointmentTopic
+        Protocol: sqs
+        Endpoint: !GetAtt SQSCL.Arn
+        FilterPolicy: {}
+          
+
+    SQSPEPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSPE
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowSNSToSendMessages
+              Effect: Allow
+              Principal: "*"
+              Action: SQS:SendMessage
+              Resource: !GetAtt SQSPE.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref AppointmentTopic
+
+    SQSCLPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SQSCL
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowSNSToSendMessages
+              Effect: Allow
+              Principal: "*"
+              Action: SQS:SendMessage
+              Resource: !GetAtt SQSCL.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref AppointmentTopic
