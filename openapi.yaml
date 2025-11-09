@@ -6,7 +6,7 @@ info:
     Refleja el modelado de DynamoDB/RDS y el cambio de estado de las citas sin alterar la fecha/hora.
   version: 1.0.0
 servers:
-  - url: https://lfw4h12fd7.execute-api.us-east-1.amazonaws.com/dev
+  - url: https://lgnm6ddlik.execute-api.us-east-1.amazonaws.com/dev
     description: Servidor AWS API Gateway (stage dev)
 
 tags:
