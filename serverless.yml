@@ -134,36 +134,4 @@ resources:
         FilterPolicy: {}
           
 
-    SQSPEPolicy:
-      Type: AWS::SQS::QueuePolicy
-      Properties:
-        Queues:
-          - !Ref SQSPE
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Sid: AllowSNSToSendMessages
-              Effect: Allow
-              Principal: "*"
-              Action: SQS:SendMessage
-              Resource: !GetAtt SQSPE.Arn
-              Condition:
-                ArnEquals:
-                  aws:SourceArn: !Ref AppointmentTopic
-
-    SQSCLPolicy:
-      Type: AWS::SQS::QueuePolicy
-      Properties:
-        Queues:
-          - !Ref SQSCL
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Sid: AllowSNSToSendMessages
-              Effect: Allow
-              Principal: "*"
-              Action: SQS:SendMessage
-              Resource: !GetAtt SQSCL.Arn
-              Condition:
-                ArnEquals:
-                  aws:SourceArn: !Ref AppointmentTopic
+    
