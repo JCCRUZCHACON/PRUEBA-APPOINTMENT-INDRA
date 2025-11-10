@@ -155,6 +155,9 @@ endpoints:
   GET  - https://lgnm6ddlik.execute-api.us-east-1.amazonaws.com/dev/appointments/{insuredId}
   REAL:
         GET  - https://lgnm6ddlik.execute-api.us-east-1.amazonaws.com/dev/appointments/00001
+
+> ⚠️ Nota: El endpoint POST debe probarse con Postman o curl, ya que los navegadores solo soportan solicitudes GET directas.
+
 functions:
   appointment
   appointment_pe
@@ -191,13 +194,12 @@ Runtime: Node.js 18.x
 Región: us-east-1
 Infraestructura: AWS (DynamoDB, SNS, SQS, RDS)
 
-Autor
-
-Desarrollado por: JUAN CARLOS CRUZ CHACÓN
-GitHub: https://github.com/JCCRUZCHACON
-Correo: confeccionesmc2018@gmail.com
-Versión: 1.0.0
-Licencia: MIT
+## 👨‍💻 Autor
+**Juan Carlos Cruz Chacón**  
+📧 confeccionesmc2018@gmail.com  
+🌐 [GitHub: JCCRUZCHACON](https://github.com/JCCRUZCHACON)  
+🏷️ Versión: 1.0.0  
+📄 Licencia: MIT
 
 “Arquitectura limpia, asincronía total y despliegue sin servidores. Una base sólida para escalar.”
 
