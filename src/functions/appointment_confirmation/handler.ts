@@ -1,18 +1,21 @@
-// appointment_confirmation.js
-const AWS = require("aws-sdk");
+import AWS from "aws-sdk";
+
 const dynamo = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = process.env.DYNAMO_TABLE;
+const TABLE_NAME = process.env.DYNAMO_TABLE || "";
 
-//appointment_confirmation
-exports.main = async (event) => {
+interface ConfirmationMessage {
+  insuredId: string;
+  scheduleId: number;
+}
+
+export const main = async (event: any): Promise<void> => {
   for (const record of event.Records) {
-    const confirmation = JSON.parse(record.body);
-
+    const confirmation: ConfirmationMessage = JSON.parse(record.body);
     const { insuredId, scheduleId } = confirmation;
 
     try {
       // Actualiza el estado a 'completed'
-      const params = {
+      const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
         TableName: TABLE_NAME,
         Key: { insuredId, scheduleId },
         UpdateExpression: "SET #st = :s",
@@ -22,8 +25,11 @@ exports.main = async (event) => {
       };
 
       const result = await dynamo.update(params).promise();
-      console.log(`✅ Cita ${scheduleId} de ${insuredId} actualizada a completed`, result.Attributes);
-    } catch (err) {
+      console.log(
+        `✅ Cita ${scheduleId} de ${insuredId} actualizada a completed`,
+        result.Attributes
+      );
+    } catch (err: unknown) {
       console.error("💥 Error actualizando estado:", err);
       throw err;
     }

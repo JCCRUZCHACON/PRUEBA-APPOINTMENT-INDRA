@@ -1,4 +1,4 @@
-#  AWS Project Indra — Backend de Agendamiento Médico (Serverless + Node.js)
+#  AWS Project Indra — Backend de Agendamiento Médico (Serverless + Node.js + typescript)
 
 ## Descripción del Proyecto
 
@@ -64,31 +64,29 @@ aws-project-indra/
 ├─ src/
 │ ├─ functions/
 │ │ ├─ appointment/
-│ │ │ ├─ handler.js
-│ │ │ ├─ dynamoService.js
-│ │ │ ├─ snsService.js
-│ │ │ ├─ sqsService.js
+│ │ │ ├─ handler.ts
+│ │ │ ├─ dynamoService.ts
+│ │ │ ├─ snsService.ts
+│ │ │ ├─ sqsService.ts
 │ │ ├─ appointment_pe/
-│ │ │ └─ handler.js
+│ │ │ └─ handler.ts
 │ │ ├─ appointment_cl/
-│ │ │ └─ handler.js
+│ │ │ └─ handler.ts
 │ │ └─ appointment_confirmation/
-│ │ └─ handler.js
+│ │     └─ handler.ts
 │ └─ tests/
-│ ├─ appointmentHandler.test.js
-│ ├─ dynamoService.test.js
-│ ├─ snsService.test.js
-│ ├─ sqsService.test.js
+│   ├─ appointmentHandler.test.ts
+│   ├─ dynamoService.test.ts
+│   ├─ snsService.test.ts
+│   ├─ sqsService.test.ts
 │
+├─ dist/             <-- carpeta generada después de compilar
 ├─ .env
-├─ .env.example
-├─ .gitignore
-├─ .openapi.yaml
-├─ package-lock.json
 ├─ package.json
+├─ tsconfig.json
+├─ openapi.yaml
 ├─ serverless.yml
-├─ README.md
-└─ serverless.yml
+└─ README.md
 
 
 ---
@@ -105,7 +103,7 @@ aws-project-indra/
 **Request**
 ```json
 {
-  "insuredId": "00045",
+  "insuredId": "00001",
   "countryISO": "PE",
   "schedule": {
     "scheduleId": 100,
@@ -141,10 +139,13 @@ SQS_CL_URL=
 SQS_CONFIRMATION_URL=
 
 🚀 Despliegue
-1️⃣ Instalar dependencias
+# Instalar dependencias
 npm install
 
-2️⃣ Desplegar con Serverless
+# Compilar TypeScript
+npm run build   # esto genera la carpeta 'dist'
+
+# Desplegar en AWS
 sls deploy --verbose
 
 

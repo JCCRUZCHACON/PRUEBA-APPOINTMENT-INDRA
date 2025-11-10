@@ -1,15 +1,30 @@
-const { saveAppointment, getAppointmentsByInsured } = require("./dynamoService");
-const { publishAppointment } = require("./snsService");
-const { sendConfirmation } = require("./sqsService");
+import { saveAppointment, getAppointmentsByInsured } from "./dynamoService";
+import { publishAppointment } from "./snsService";
+import { sendConfirmation } from "./sqsService";
 
-//src/functions/appointment/handler.main
-exports.main = async (event) => {
+// Definimos la forma de los datos que recibimos
+interface Schedule {
+  scheduleId: number;
+  centerId: number;
+  specialtyId: number;
+  medicId: number;
+  date: string;
+}
+
+interface AppointmentInput {
+  insuredId: string;
+  countryISO: "PE" | "CL";
+  schedule: Schedule;
+}
+
+// Lambda handler
+export const main = async (event: any) => {
   try {
     const method = event.requestContext?.http?.method || event.httpMethod;
 
     // ---------------- POST /appointments ----------------
     if (method === "POST") {
-      const body = JSON.parse(event.body || "{}");
+      const body: AppointmentInput = JSON.parse(event.body || "{}");
 
       // Validación básica
       if (
@@ -65,7 +80,7 @@ exports.main = async (event) => {
 
     // ---------------- Método no permitido ----------------
     return { statusCode: 405, body: "Método no permitido" };
-  } catch (err) {
+  } catch (err: any) {
     console.error("💥 Error en Lambda:", err);
     return {
       statusCode: 500,
@@ -76,3 +91,5 @@ exports.main = async (event) => {
     };
   }
 };
+
+export {};
