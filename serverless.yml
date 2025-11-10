@@ -3,6 +3,8 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-plugin-typescript
+  - serverless-iam-roles-per-function
 
 provider:
   name: aws
@@ -40,6 +42,9 @@ provider:
     SQS_PE_URL: !Ref SQSPE
     SQS_CL_URL: !Ref SQSCL
     SQS_CONFIRMATION_URL: !Ref SQSConfirmation
+
+package:
+  individually: true
 
 functions:
   appointment:

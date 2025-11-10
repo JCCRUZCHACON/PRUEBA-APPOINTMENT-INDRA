@@ -3,18 +3,25 @@
   "version": "1.0.0",
   "description": "Reto técnico backend AWS",
   "scripts": {
+    "build": "tsc",
     "start": "serverless offline",
-    "deploy": "serverless deploy",
-    "test": "jest --forceExit --detectOpenHandles"
+    "deploy": "npm run build && serverless deploy",
+    "test": "jest --forceExit --detectOpenHandles",
+    "invoke:local": "serverless invoke local -f appointment --path src/mocks/request.json"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.157",
     "@types/jest": "^30.0.0",
+    "@types/minimatch": "^6.0.0",
+    "@types/node": "^24.10.0",
     "aws-sdk-client-mock": "^4.1.0",
     "jest": "^30.2.0",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-plugin-typescript": "^2.1.5",
-    "ts-jest": "^29.4.5"
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.927.0",

@@ -1,25 +1,39 @@
-// appointment_cl.js
-const { SQSClient, DeleteMessageCommand } = require("@aws-sdk/client-sqs");
-const mysql = require("mysql2/promise");
+import { SQSClient, DeleteMessageCommand } from "@aws-sdk/client-sqs";
+import mysql from "mysql2/promise";
 
-const SQS_URL = process.env.SQS_CL_URL; // Cambiado de PE a CL
+const SQS_URL = process.env.SQS_CL_URL || ""; 
 
 const rdsConfig = {
-  host: process.env.RDS_HOST,
-  user: process.env.RDS_USER,
-  password: process.env.RDS_PASSWORD,
-  database: process.env.RDS_DB,
+  host: process.env.RDS_HOST || "",
+  user: process.env.RDS_USER || "",
+  password: process.env.RDS_PASSWORD || "",
+  database: process.env.RDS_DB || "",
 };
 
 const sqsClient = new SQSClient({ region: "us-east-1" });
 
-//appointment_cl.js
-exports.handler = async (event) => {
+interface Schedule {
+  centerId: number;
+  specialtyId: number;
+  medicId: number;
+  date: string;
+}
+
+interface AppointmentMessage {
+  insuredId: string;
+  scheduleId: number;
+  countryISO: string;
+  schedule: Schedule;
+  status: string;
+  createdAt: string;
+}
+
+export const handler = async (event: any): Promise<void> => {
   const connection = await mysql.createConnection(rdsConfig);
 
   try {
     for (const record of event.Records) {
-      const data = JSON.parse(record.body);
+      const data: AppointmentMessage = JSON.parse(record.body);
       console.log("Procesando mensaje de SQS CL:", data);
 
       const query = `
@@ -37,18 +51,20 @@ exports.handler = async (event) => {
         data.schedule.medicId,
         data.schedule.date,
         data.status,
-        data.createdAt
+        data.createdAt,
       ]);
 
       // Borrar mensaje de SQS
-      await sqsClient.send(new DeleteMessageCommand({
-        QueueUrl: SQS_URL,
-        ReceiptHandle: record.receiptHandle
-      }));
+      await sqsClient.send(
+        new DeleteMessageCommand({
+          QueueUrl: SQS_URL,
+          ReceiptHandle: record.receiptHandle,
+        })
+      );
 
       console.log(`✅ Mensaje con scheduleId ${data.scheduleId} insertado en RDS y borrado de SQS CL`);
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("💥 Error procesando mensajes CL:", err);
     throw err;
   } finally {
